@@ -197,7 +197,7 @@ if (defined('G5_USE_SHOP') && G5_USE_SHOP) {
 
     $result = sql_query("describe `{$g5['g5_shop_post_log_table']}`");
     while ($row = sql_fetch_array($result)){
-        if( $row['Field'] === 'ol_msg' && $row['Type'] === 'varchar(255)' ){
+        if( isset($row['Field']) && $row['Field'] === 'ol_msg' && $row['Type'] === 'varchar(255)' ){
             sql_query("ALTER TABLE `{$g5['g5_shop_post_log_table']}` MODIFY ol_msg TEXT NOT NULL;", false);
             sql_query("ALTER TABLE `{$g5['g5_shop_post_log_table']}` DROP PRIMARY KEY;", false);
             sql_query("ALTER TABLE `{$g5['g5_shop_post_log_table']}` ADD `log_id` int(11) NOT NULL AUTO_INCREMENT, ADD PRIMARY KEY (`log_id`);", false);
@@ -205,6 +205,18 @@ if (defined('G5_USE_SHOP') && G5_USE_SHOP) {
             break;
         }
     }
+}
+
+// auth.au_menu 컬럼 크기 조정
+$sql = " SHOW COLUMNS FROM `{$g5['auth_table']}` LIKE 'au_menu' ";
+$row = sql_fetch($sql);
+if (
+    stripos($row['Type'], 'varchar') !== false
+    && (int) preg_replace('/[^0-9]/', '', $row['Type']) <= 50
+) {
+    sql_query(" ALTER TABLE `{$g5['auth_table']}` CHANGE `au_menu` `au_menu` VARCHAR(50) NOT NULL; ", true);
+
+    $is_check = true;
 }
 
 $is_check = run_replace('admin_dbupgrade', $is_check);

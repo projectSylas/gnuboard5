@@ -49,7 +49,9 @@ while ($row = sql_fetch_array($result))
         $count_write = 0;
         $count_comment = 0;
 
-        $next_wr_num = get_next_num($move_write_table);
+        // get_next_num 함수는 mysql 지연시 중복이 될수 있는 문제로 더 이상 사용하지 않습니다.
+        // $next_wr_num = get_next_num($move_write_table);
+        $next_wr_num = 0;
 
         $sql2 = " select * from $write_table where wr_num = '$wr_num' order by wr_parent, wr_is_comment, wr_comment desc, wr_id ";
         $result2 = sql_query($sql2);
@@ -78,7 +80,7 @@ while ($row = sql_fetch_array($result))
             }
 
             $sql = " insert into $move_write_table
-                        set wr_num = '$next_wr_num',
+                        set wr_num = " . ($next_wr_num ? "'$next_wr_num'" : "(SELECT IFNULL(MIN(wr_num) - 1, -1) FROM $move_write_table sq) ") . ",
                              wr_reply = '{$row2['wr_reply']}',
                              wr_is_comment = '{$row2['wr_is_comment']}',
                              wr_comment = '{$row2['wr_comment']}',
@@ -116,6 +118,11 @@ while ($row = sql_fetch_array($result))
             sql_query($sql);
 
             $insert_id = sql_insert_id();
+            
+            if ($next_wr_num === 0) {
+                $tmp = sql_fetch("select wr_num from $move_write_table where wr_id = '$insert_id'");
+                $next_wr_num = $tmp['wr_num'];
+            }
 
             // 코멘트가 아니라면
             if (!$row2['wr_is_comment'])
@@ -126,6 +133,8 @@ while ($row = sql_fetch_array($result))
                 $result3 = sql_query($sql3);
                 for ($k=0; $row3 = sql_fetch_array($result3); $k++)
                 {
+                    $copy_file_name = '';
+                    
                     if ($row3['bf_file'])
                     {
                         // 원본파일을 복사하고 퍼미션을 변경

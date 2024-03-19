@@ -41,8 +41,8 @@ if ($ev_mimg_del)  @unlink(G5_DATA_PATH."/event/{$ev_id}_m");
 if ($ev_himg_del)  @unlink(G5_DATA_PATH."/event/{$ev_id}_h");
 if ($ev_timg_del)  @unlink(G5_DATA_PATH."/event/{$ev_id}_t");
 
-$ev_skin = preg_replace('#\.+(\/|\\\)#', '', $ev_skin);
-$ev_mobile_skin = preg_replace('#\.+(\/|\\\)#', '', $ev_mobile_skin);
+$ev_skin = preg_replace(array('#\.+(\/|\\\)#', '#[\'\"]#'), array('', ''), $ev_skin);
+$ev_mobile_skin = preg_replace(array('#\.+(\/|\\\)#', '#[\'\"]#'), array('', ''), $ev_mobile_skin);
 
 $skin_regex_patten = "^list.[0-9]+\.skin\.php";
 
@@ -75,6 +75,7 @@ if ($w == "")
                     $sql_common
                   , ev_id = '$ev_id' ";
     sql_query($sql);
+    run_event('shop_admin_event_created', $ev_id);
 }
 else if ($w == "u")
 {
@@ -82,6 +83,7 @@ else if ($w == "u")
                 $sql_common
               where ev_id = '$ev_id' ";
     sql_query($sql);
+    run_event('shop_admin_event_updated', $ev_id);
 }
 else if ($w == "d")
 {
@@ -92,6 +94,7 @@ else if ($w == "d")
     // 이벤트상품삭제
     $sql = " delete from {$g5['g5_shop_event_item_table']} where ev_id = '$ev_id' ";
     sql_query($sql);
+    run_event('shop_admin_event_deleted', $ev_id);
 
     $sql = " delete from {$g5['g5_shop_event_table']} where ev_id = '$ev_id' ";
     sql_query($sql);

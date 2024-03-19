@@ -28,8 +28,8 @@ if ($_FILES['mobile_logo_img2']['name']) upload_file($_FILES['mobile_logo_img2']
 $de_kcp_mid = isset($_POST['de_kcp_mid']) ? substr($_POST['de_kcp_mid'], 0, 3) : '';
 $cf_icode_server_port = isset($cf_icode_server_port) ? preg_replace('/[^0-9]/', '', $cf_icode_server_port) : '7295';
 
-$de_shop_skin = isset($_POST['de_shop_skin']) ? preg_replace('#\.+(\/|\\\)#', '', $_POST['de_shop_skin']) : 'basic';
-$de_shop_mobile_skin = isset($_POST['de_shop_mobile_skin']) ? preg_replace('#\.+(\/|\\\)#', '', $_POST['de_shop_mobile_skin']) : 'basic';
+$de_shop_skin = isset($_POST['de_shop_skin']) ? preg_replace(array('#\.+(\/|\\\)#', '#[\'\"]#'), array('', ''), $_POST['de_shop_skin']) : 'basic';
+$de_shop_mobile_skin = isset($_POST['de_shop_mobile_skin']) ? preg_replace(array('#\.+(\/|\\\)#', '#[\'\"]#'), array('', ''), $_POST['de_shop_mobile_skin']) : 'basic';
 
 $skins = get_skin_dir('shop');
 
@@ -59,7 +59,7 @@ $de_shop_mobile_skin = in_array($de_shop_mobile_skin, $mobile_skins) ? $de_shop_
 $check_skin_keys = array('de_type1_list_skin', 'de_type2_list_skin', 'de_type3_list_skin', 'de_type4_list_skin', 'de_type5_list_skin', 'de_mobile_type1_list_skin', 'de_mobile_type2_list_skin', 'de_mobile_type3_list_skin', 'de_mobile_type4_list_skin', 'de_mobile_type5_list_skin', 'de_rel_list_skin', 'de_mobile_rel_list_skin', 'de_search_list_skin', 'de_mobile_search_list_skin', 'de_listtype_list_skin', 'de_mobile_listtype_list_skin');
 
 foreach($check_skin_keys as $key){
-    $$key = $_POST[$key] = isset($_POST[$key]) ? preg_replace('#\.+(\/|\\\)#', '', strip_tags($_POST[$key])) : '';
+    $$key = $_POST[$key] = isset($_POST[$key]) ? preg_replace(array('#\.+(\/|\\\)#', '#[\'\"]#'), array('', ''), strip_tags($_POST[$key])) : '';
 
     if( isset($_POST[$key]) && preg_match('#\.+(\/|\\\)#', $_POST[$key]) ){
         alert('스킨설정에 유효하지 문자가 포함되어 있습니다.');
@@ -160,7 +160,8 @@ $check_sanitize_keys = array(
 'cf_lg_mid',                    //LG유플러스 상점아이디
 'cf_lg_mert_key',               //LG유플러스 MERT KEY
 'de_inicis_mid',                //KG이니시스 상점아이디
-'de_inicis_admin_key',          //KG이니시스 키패스워드
+'de_inicis_iniapi_key',         //KG이니시스 INIAPI KEY
+'de_inicis_iniapi_iv',          //KG이니시스 INIAPI IV
 'de_inicis_sign_key',           //KG이니시스 웹결제 사인키
 'de_samsung_pay_use',           //KG이니시스 삼성페이 사용
 'de_inicis_lpay_use',           //KG이니시스 Lpay 사용
@@ -239,7 +240,11 @@ $check_sanitize_keys = array(
 );
 
 foreach( $check_sanitize_keys as $key ){
-    $$key = isset($_POST[$key]) ? clean_xss_tags($_POST[$key], 1, 1) : '';
+    if( in_array($key, array('de_bank_account')) ){
+        $$key = isset($_POST[$key]) ? clean_xss_tags($_POST[$key], 1, 1, 0, 0) : '';
+    } else {
+        $$key = isset($_POST[$key]) ? clean_xss_tags($_POST[$key], 1, 1) : '';
+    }
 }
 
 $warning_msg = '';
@@ -395,7 +400,8 @@ $sql = " update {$g5['g5_shop_default_table']}
                 de_kcp_mid                    = '{$de_kcp_mid}',
                 de_kcp_site_key               = '{$de_kcp_site_key}',
                 de_inicis_mid                 = '{$de_inicis_mid}',
-                de_inicis_admin_key           = '{$de_inicis_admin_key}',
+                de_inicis_iniapi_key          = '{$de_inicis_iniapi_key}',
+                de_inicis_iniapi_iv           = '{$de_inicis_iniapi_iv}',
                 de_inicis_sign_key            = '{$de_inicis_sign_key}',
                 de_iche_use                   = '{$de_iche_use}',
                 de_sms_cont1                  = '{$_POST['de_sms_cont1']}',

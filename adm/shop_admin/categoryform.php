@@ -12,7 +12,6 @@ $ca = array(
 'ca_name'=>'',
 'ca_order'=>'',
 'ca_mb_id'=>'',
-'ca_skin_dir'=>'',
 'ca_cert_use'=>0,
 'ca_adult_use'=>0,
 'ca_sell_email'=>'',
@@ -49,7 +48,7 @@ if ($w == "")
               where SUBSTRING(ca_id,1,$len) = '$ca_id' ";
     $row = sql_fetch($sql);
 
-    $subid = base_convert($row['max_subid'], 36, 10);
+    $subid = base_convert((string)$row['max_subid'], 36, 10);
     $subid += 36;
     if ($subid >= 36 * 36)
     {
